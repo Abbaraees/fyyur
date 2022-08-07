@@ -25,7 +25,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
-from models import Artist, Show, Venue
+from models import Artist, Show, Venue, Genre
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -99,7 +99,6 @@ def show_venue(venue_id):
   venue.past_shows = past_shows
   venue.upcoming_shows_count = len(upcoming_shows)
   venue.past_shows_count = len(past_shows)
-  venue.artist_name 
 
   if venue is None:
     abort(404)
@@ -142,19 +141,22 @@ def create_venue_submission():
         gnr = Genre(name=g)
         genres.append(gnr)
 
-    venue.genres = genres
+  venue.genres = genres
+
+  try:
     db.session.add(venue)
     db.session.commit()
-  else:
+  except:
     error = True
     db.session.rollback()
+    print(sys.exc_info())
 
   # on successful db insert, flash success
   if not error:
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
   else:
     # TODO: on unsuccessful db insert, flash an error instead.
-    flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+    flash('An error occurred. Venue ' + venue.name + ' could not be listed.')
   return redirect(url_for('index')) #('pages/home.html')
 
 
