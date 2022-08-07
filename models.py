@@ -1,8 +1,10 @@
-from app import db
+from flask_sqlalchemy import SQLAlchemy
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
 
+
+db = SQLAlchemy()
 
 class Genre(db.Model):
     __tablename__ = 'Genre'
@@ -38,7 +40,7 @@ class Venue(db.Model):
     genres = db.relationship(
         'Genre', secondary=venue_genres, backref=db.backref('venues', lazy=True)
     )
-    shows = db.relationship('Show', backref='venue', lazy=True)
+    shows = db.relationship('Show', backref='venue', lazy=True, cascade='delete, all')
 
     def __repr__(self):
         return f'<Venue id: {self.id}, name: {self.name}>'
@@ -61,7 +63,7 @@ class Artist(db.Model):
     genres = db.relationship(
         'Genre', secondary=artist_genres, backref=db.backref('artists', lazy=True)
     )
-    shows = db.relationship('Show', backref='artist', lazy=True)
+    shows = db.relationship('Show', backref='artist', lazy=True, cascade='delete, all')
 
     def __repr__(self):
         return f'<Artist id: {self.id}, name: {self.name}>'

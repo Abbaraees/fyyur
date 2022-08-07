@@ -14,6 +14,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from models import db, Artist, Genre, Show, Venue
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -21,11 +22,10 @@ from forms import *
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
-from models import Artist, Show, Venue, Genre
+db.init_app(app)
+migrate = Migrate(app, db)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -438,7 +438,7 @@ def create_show_submission():
   venue = Venue.query.get(form.venue_id.data)
   show.artist = artist
   show.venue = venue
-  if not (venue or artist):
+  if (venue is None or artist is None):
     flash('Invalid Artist id or Venue id')
     return render_template('forms/new_show.html', form=form)
 
