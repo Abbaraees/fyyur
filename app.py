@@ -491,6 +491,27 @@ def create_availability_submission():
 
   return render_template('forms/new_availability.html', form=form)
 
+@app.route('/search_by_city')
+def search_by_city():
+  return render_template('pages/search_by_city.html')
+
+@app.route('/search_by_city', methods=['POST'])
+def search_by_city_submission():
+  search_term = request.form.get('search_term')
+  city = search_term.split(',')[0]
+  state = search_term.split(',')[1].strip()
+
+  venues = Venue.query.filter_by(state=state, city=city).all()
+  artists = Artist.query.filter_by(state=state, city=city).all()
+
+  data = {
+    'count': len(venues) + len(artists),
+    'venues': venues,
+    'artists': artists
+  }
+
+  return render_template('pages/search_by_city.html', results=data, search_term=search_term)
+
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('errors/404.html'), 404
