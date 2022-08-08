@@ -1,6 +1,14 @@
 {% extends 'layouts/main.html' %}
 {% block title %}{{ artist.name }} | Artist{% endblock %}
 {% block content %}
+<style>
+	#availability {
+		list-style: none;
+		padding: 0;
+		font-weight: bold;
+	}
+</style>
+
 <div class="row">
 	<div class="col-sm-6">
 		<h1 class="monospace">
@@ -41,6 +49,28 @@
 	</div>
 	<div class="col-sm-6">
 		<img src="{{ artist.image_link }}" alt="Venue Image" />
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-6">
+		<h3 class="form-heading">Availability</h3>
+		<ul id="availability">
+			{% for time in artist.availabilities %}
+			<li>{{ time.time }}</li>
+			{% endfor %}
+		</ul>
+		<div class="form-wrapper">
+			<form method="post" class="form" action="/availability/create">
+			  <div style="display: none;">
+				{{ form.artist_id(value=artist.id)}}
+			  </div>
+			  <div class="form-group">
+				  <label for="start_time">Available Time</label>
+				  {{ form.time(class_ = 'form-control', placeholder='HH:MM', autofocus = true) }}
+				</div>
+			  <input type="submit" value="Add Availability" class="btn btn-primary btn-lg btn-block">
+			</form>
+		  </div>
 	</div>
 </div>
 <section>

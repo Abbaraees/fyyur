@@ -64,6 +64,7 @@ class Artist(db.Model):
         'Genre', secondary=artist_genres, backref=db.backref('artists', lazy=True)
     )
     shows = db.relationship('Show', backref='artist', lazy=True, cascade='delete, all')
+    availabilities = db.relationship('Availability', backref='artist', lazy=True, cascade='delete, all')
 
     def __repr__(self):
         return f'<Artist id: {self.id}, name: {self.name}>'
@@ -79,3 +80,11 @@ class Show(db.Model):
     def __repr__(self):
         return f'<Show id: {self.id}, time: {self.start_time}, artist_id: {self.artist_id}>'
 
+
+class Availability(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.Time)
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+
+    def __repr__(self):
+        return f'<Availability id: {self.id} time: {self.time} artist: {self.artist.name}>'

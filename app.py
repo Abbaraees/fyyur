@@ -14,7 +14,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
-from models import db, Artist, Genre, Show, Venue
+from models import db, Artist, Genre, Show, Venue, Availability
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -217,7 +217,7 @@ def search_artists():
 def show_artist(artist_id):
   # shows the artist page with the given artist_id
   # TODO: replace with real artist data from the artist table, using artist_id
- 
+  form = AvailabilityForm()
   artist = Artist.query.get(artist_id)
   all_shows = artist.shows
   upcoming_shows = list(filter(lambda x: dateutil.parser.parse(x.start_time) > datetime.now(), all_shows))
@@ -232,7 +232,7 @@ def show_artist(artist_id):
     abort(404)
 
   data = artist #list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
-  return render_template('pages/show_artist.html', artist=data)
+  return render_template('pages/show_artist.html', artist=data, form=form)
 
 #  Update
 #  ----------------------------------------------------------------
@@ -442,6 +442,13 @@ def create_show_submission():
     flash('Invalid Artist id or Venue id')
     return render_template('forms/new_show.html', form=form)
 
+  # Check availability
+  time = form.start_time.data.time()
+  availabilities = [x.time for x in artist.availabilities]
+  if availabilities and time not in availabilities:
+    flash('Sorry! The artist will not be available on the selected time. Please choose another time.')
+    return render_template('forms/new_show.html', form=form)
+
   try:
     db.session.add(show)
     db.session.commit()
@@ -456,6 +463,33 @@ def create_show_submission():
     db.session.close()
 
   return redirect(url_for('shows'))
+
+@app.route('/availability/create')
+def create_availability():
+    form = AvailabilityForm()
+    return render_template('forms/new_availability.html', form=form)
+
+@app.route('/availability/create', methods=['POST'])
+def create_availability_submission():
+  form = AvailabilityForm(request.form)
+
+  if form.validate():
+    artist = Artist.query.get(form.artist_id.data)
+    time = form.time.data
+    new_availability = Availability(time=time)
+    artist.availabilities.append(new_availability)
+
+    try:
+      db.session.commit()
+      flash('New availability has been listed')
+      return redirect(url_for('show_artist', artist_id=artist.id))
+    except:
+      db.session.rollback()
+      flash('Failed to add new availability')
+    finally:
+      db.session.close()
+
+  return render_template('forms/new_availability.html', form=form)
 
 @app.errorhandler(404)
 def not_found_error(error):
