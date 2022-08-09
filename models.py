@@ -6,23 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Genre(db.Model):
-    __tablename__ = 'Genre'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-
-    def __repr__(self):
-      return self.name
-
-artist_genres = db.Table('artist_genres', 
-    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
-    db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
-)
-
-venue_genres = db.Table('venue_genres', 
-    db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id')),
-    db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id')))
-
 class Venue(db.Model):
     __tablename__ = 'Venue'
 
@@ -37,10 +20,8 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String)
-    genres = db.relationship(
-        'Genre', secondary=venue_genres, backref=db.backref('venues', lazy=True)
-    )
-    shows = db.relationship('Show', backref='venue', lazy=True, cascade='delete, all')
+    genres = db.Column(db.ARRAY(db.String()))
+    shows = db.relationship('Show', backref='venue', lazy='joined', cascade='delete, all')
 
     def __repr__(self):
         return f'<Venue id: {self.id}, name: {self.name}>'
@@ -60,10 +41,8 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String)
-    genres = db.relationship(
-        'Genre', secondary=artist_genres, backref=db.backref('artists', lazy=True)
-    )
-    shows = db.relationship('Show', backref='artist', lazy=True, cascade='delete, all')
+    genres = db.Column(db.ARRAY(db.String()))
+    shows = db.relationship('Show', backref='artist', lazy='joined', cascade='delete, all')
     availabilities = db.relationship('Availability', backref='artist', lazy=True, cascade='delete, all')
 
     def __repr__(self):
