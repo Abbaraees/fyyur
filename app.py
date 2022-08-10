@@ -104,8 +104,12 @@ def show_venue(venue_id):
   venue = Venue.query.get_or_404(venue_id)
   upcoming_shows = []
   past_shows = []
+  all_shows = db.session.\
+    query(Show).\
+    join(Venue.shows).\
+    filter_by(venue_id=venue_id).all()
 
-  for show in venue.shows:
+  for show in all_shows:
     temp_show = {
       'artist_id': show.artist.id,
       'artist_name': show.artist.name,
@@ -245,8 +249,12 @@ def show_artist(artist_id):
   artist = Artist.query.get_or_404(artist_id)
   upcoming_shows = []
   past_shows = []
+  all_shows = db.session.\
+    query(Show).\
+    join(Artist.shows).\
+    filter_by(artist_id=artist_id).all()
 
-  for show in artist.shows:
+  for show in all_shows:
     temp_show = {
       'venue_id': show.venue.id,
       'venue_name': show.venue.name,
